@@ -1,0 +1,10 @@
+{
+    "host": "smtp.zoho.com",
+    "port": 587,
+    "secure": false,
+    "auth": {
+      "user": "onecore_mail@zohomail.com",
+      "pass": "Onecore2025**"
+    }
+  }
+  
