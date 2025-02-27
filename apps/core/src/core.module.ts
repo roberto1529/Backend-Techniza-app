@@ -15,9 +15,11 @@ import * as conf from '../../shared/config/onecore.json'; // Importar archivo JS
       database: conf.database,
       autoLoadModels: conf.autoLoadModels,
       synchronize: conf.synchronize,
+      logging: true,
     }),
   ],
   controllers: [CoreController],
   providers: [],
 })
+
 export class CoreModule {}

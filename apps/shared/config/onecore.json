@@ -1,11 +1,11 @@
 {
-    "dialect": "postgres",
-    "host": "158.220.83.8",
-    "port": 5432,
-    "username": "admin",
-    "password": "Techniza**",
-    "database": "Techniza",
-    "autoLoadModels": true,
-    "synchronize": false
-  }
-  
+  "dialect": "postgres",
+  "host": "158.220.83.8",
+  "port": 5432,
+  "username": "admin",
+  "password": "Techniza**",
+  "database": "postgres",
+  "autoLoadModels": true,
+  "synchronize": true,
+  "logging": true
+}

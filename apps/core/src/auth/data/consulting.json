@@ -1,6 +1,4 @@
 {
-    "$all_users": "select * from public.ocr_usu_info oui",
-    "$user_value": "select u.id, i.correo, concat(initcap(i.pri_nombre) , ' ',initcap(i.pri_apellido)) as usuario from ocr_usu_usuario u join ocr_usu_pass p on p.id_usuario  = u.id join ocr_usu_info i on i.id_usuario = u.id  where lower(u.nombre_usario) = lower(:us)  and p.key = :pw",
     "$insert_session":"INSERT INTO public.ocr_usurio_session (id_usuario, sha_key) VALUES(:id_user, :sha);",
     "$_2facTokenValue": "INSERT INTO public.ocr_usu_2fa ( token, id_usuario, fecha_init, fecha_fin) VALUES(:tk, :us, :init, :fin);",
     "$bloquearToken": "UPDATE public.ocr_usu_2fa SET  estado = false, estado_confirmacion =  3 WHERE  id_usuario = :us and estado_confirmacion = 1;",

@@ -118,15 +118,15 @@ export class MailService {
       <body>
 
         <div class="card">
-            <div class="header">ONECORE</div>
+            <div class="header">Techniza</div>
             <div class="content">Hola ${contenido.usuaio}
-            Somos Onecore. Te enviamos tu clave dinámica ${contenido.token}. Por favor, ingrésala en el sistema para acceder al ERP.</div>
+            Somos Onecore. Te enviamos tu clave dinámica ${contenido.token}. Por favor, ingrésala acceder.</div>
             <div class="dinamicKey">
                     ${contenido.token}
             </div>
             <div class="ley">En cumplimiento con nuestra política de privacidad y protección de datos, le informamos que los correos electrónicos enviados con claves dinámicas son estrictamente confidenciales y están destinados únicamente al uso personal del destinatario. Estas claves no deben ser compartidas con terceros bajo ninguna circunstancia. El uso indebido de esta información es responsabilidad exclusiva del usuario, eximiendo a nuestra empresa de cualquier consecuencia derivada de dicha acción.
             </div>
-            <div class="footer">© ${new Date().getFullYear()} OneCore. Todos los derechos reservados.</div>
+            <div class="footer">© ${new Date().getFullYear()} Techniza. Todos los derechos reservados.</div>
         </div>
         <table>
           <tr>
