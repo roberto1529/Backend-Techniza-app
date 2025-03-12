@@ -8,13 +8,14 @@ export interface MailInterface {
      correo: string,
      asunto: string,
      contenido: {
-          token: number;
+          token: any;
           usuaio: string;
+          mensaje: string;
      }
 }
 export interface MailBodyData {
 
      token: number;
      usuaio: string;
-
+     mensaje: string;
 }

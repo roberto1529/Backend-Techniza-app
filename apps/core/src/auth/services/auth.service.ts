@@ -52,13 +52,10 @@ export class AuthService {
 
       if (result.length > 0) {
         /* paso 1 generear el token services */
-        let tk = await this._2fa.TokenGenator();
-        let exp = await this._2fa.ExpirationToken();
-        /* se guardar token generado con la informacion del usuario en la base de datos */
+        let tk = await this._2fa.TokenGenator()
         await this.GuardarToken(
           data_response.map((x) => parseInt(x.id)),
-          tk,
-          exp,
+          tk
         );
         /* Enviamos el correo al usuario */
         let datamap = data_response.map((x) => x);
@@ -69,14 +66,12 @@ export class AuthService {
           contenido: {
             usuaio: datamap[0].nombre +' '+datamap[0].apellido1,
             token: tk,
+            mensaje: 'por favor ingresa el código que recibiste en el portal de acceso.'
           },
         };
         await this.SendMail(_ml);
 
-        data_response = {
-          token: tk,
-          expiracion: exp,
-        };
+        data_response = { token: tk };
         response = {
           status: 200,
           data: result,
@@ -100,7 +95,7 @@ export class AuthService {
     }
   }
 
-  private async GuardarToken(user, token, date) {
+  private async GuardarToken(user, token) {
     try {
       let _user = user[0];
   
@@ -112,17 +107,15 @@ export class AuthService {
         },
         raw: true,
       });
-      // const query = conf['$_2facTokenValue'];
-      // await this.sequelize.query(query, {
-      //   type: QueryTypes.INSERT,
-      //   replacements: {
-      //     tk: token,
-      //     us: _user,
-      //     init: date.init,
-      //     fin: date.fin,
-      //   },
-      //   raw: true,
-      // });
+      const query = `INSERT INTO usu_2fa_reg (id_usu, "token") VALUES(:us,:tk);`;
+      await this.sequelize.query(query, {
+        type: QueryTypes.INSERT,
+        replacements: {
+          tk: token,
+          us: _user
+        },
+        raw: true,
+      });
 
       return true;
     } catch (error) {

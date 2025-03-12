@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { QueryTypes } from 'sequelize';
-import { Sequelize } from 'sequelize-typescript';
-import * as conf from '../data/consulting.json'; // Importar archivo JSON
-import { ValidatorSqlService } from 'apps/shared/services/Validator/injector.service';
+import { Sequelize } from 'sequelize-typescript';import { ValidatorSqlService } from 'apps/shared/services/Validator/injector.service';
 import * as crypto from 'crypto'; // Importamos el módulo crypto
 import { EncryptionService } from 'apps/shared/services/cypress/crypto.service';
 import { Response } from 'express';
@@ -22,8 +20,8 @@ export class Auth2FAService {
     let valido = await this.Validar_Activo(data);
     
     if (valido.status != true) {
-         let res = await this.GuardarSesionActiva(valido)
-        response = { data: res, Status: 200 }
+         let res = await this.GuardarSesionActiva(valido, data.token)
+        response = { data: {tk: res, data: valido}, Status: 200 }
      }else{
       response = { mensaje: 'Codigo Invalido', Status: 500 }
      }
@@ -36,17 +34,16 @@ export class Auth2FAService {
   private async Validar_Activo(data: any) {
     const transaction = await this.sequelize.transaction();
     try {
-      const sql = conf['$consultar_tokenActivo'];     
+      const sql = `select * from usu_2fa_reg c join usu_sys  ie on ie.id = c.id_usu where c.id_usu = :us and c.token = :tk`;
       const qy = await this.sequelize.query(sql, {
         type: QueryTypes.SELECT,
         replacements: {
           us: Number(data.id_user),
-          tk: Number(data.token),
+          tk: data.token,
         },
         transaction: transaction || undefined, 
       });
 
-      console.log('Resultado:', qy.length);
       if (qy.length > 0) {
         return {status:false , datos:qy}
       } else{
@@ -61,37 +58,24 @@ export class Auth2FAService {
       
   }
 
-  private async GuardarSesionActiva(data) {
+  private async GuardarSesionActiva(data, tk) {
     try {
-      
-      let dato = data.datos.map(x => x).flat();
-      console.log('Datos de session', dato[0].id_usuario);      
-      
-      const dapp = dato[0].id_usuario.toString();
+      console.log('Datos de session',data);
+      let ids = data.datos.map(d => d.id_usu);
+      ids = ids[0];
       const hash = crypto.createHash('sha256');
-      hash.update(dapp);
       // Obtenemos el hash en formato hexadecimal
       const fullHash = hash.digest('hex');
       const sha = fullHash.slice(0, 16);
-    
-      // await this.sequelize.query(conf['$insert_session'], {
-      //   type: QueryTypes.INSERT,
-      //   replacements: {
-      //     id_user: data.id_user,
-      //     sha: sha,
-      //   },
-      //   raw: true,
-      // });
       
-      // await this.sequelize.query(conf['$TokenConfimado'], {
-      //   type: QueryTypes.UPDATE,
-      //   replacements: {
-      //     id: datos.id,
-      //     sha: sha,
-      //   },
-      //   raw: true,
-      // });
-
+      await this.sequelize.query(`UPDATE usu_2fa_reg SET estado_verificado=2 WHERE "token"=:tk and id_usu = :id;`, {
+         type: QueryTypes.UPDATE,
+         replacements: {
+           id: ids,
+           tk: tk,
+         },
+         raw: true,
+      });
 
 
       return sha;

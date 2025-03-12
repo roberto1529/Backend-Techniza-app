@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Global, Injectable } from '@nestjs/common';
 import * as CryptoJS from 'crypto-js';
-
+@Global()
 @Injectable()
 export class EncryptionService {
 

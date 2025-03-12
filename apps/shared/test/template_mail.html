@@ -1,50 +1,4 @@
-import { Global, Injectable } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
-import * as confMail from '../../config/mail_config.json'; // Importar archivo JSON
-import { MailBodyData, MailInterface } from 'apps/core/src/auth/types/auth.interfaces';
-@Global() 
-@Injectable()
-export class MailService {
-    private transportador: nodemailer.Transporter;
-  constructor() {
-    this.transportador = nodemailer.createTransport({
-        service: 'zoho',
-        host:confMail.host,
-        port: confMail.port,
-        secure: true,
-        auth: {
-            user: confMail.auth.user, pass:  confMail.auth.pass, 
-        }
-    });
-  }
-
-  async sendEmail(data: any) {
-    try {
-      let body = {
-        from: confMail.auth.user, // Remitente
-        to: data.correo, // Destinatario
-        subject: data.asunto, // Asunto del correo
-        html: await this.BodyMail(data.contenido),
-
-    };
-    await this.transportador.sendMail(body);
-    // Agrega un pequeño retraso entre envíos
-    await new Promise(resolve => setTimeout(resolve, 1000)); // 1000 milisegundos = 1 segundo
-
-    // Cerrar la conexión después de enviar el correo electrónico
-    this.transportador.close();
-    } catch (error) {
-        console.log(error);
-        return error 
-    }
-
-  }
-  
-  private BodyMail(contenido: MailBodyData) {
-
-    let mensaje = ``;
-
-    let html = ` <!DOCTYPE html>
+ <!DOCTYPE html>
       <html>
       <head>
         <meta charset="UTF-8">
@@ -94,7 +48,7 @@ export class MailService {
               margin: auto;
               text-align: center;
               background: black;
-              width: auto;
+              width: 105px;
               border-radius: 10px;
               color: white;
               font-weight: 600;
@@ -102,7 +56,6 @@ export class MailService {
             .footer{
               margin-top: 2.5rem;
               font-size: 10px;
-              text-align: center;
             }
         </style>
       </head>
@@ -113,19 +66,17 @@ export class MailService {
             <img src="https://techniza.com/wp-content/uploads/2022/03/techniza.png" 
             style="width: 30%; display: block; margin: auto;" alt="">
             <div class="content">
-              Hola <b>${contenido.usuaio}</b>, ${contenido.mensaje} </div>
+              Hola <b>@usuario</b>, por favor ingresa el código que recibiste en el portal de acceso.            </div>
             <div class="dinamicKey">
-            ${contenido.token}
+                    1529
             </div>
             <div class="footer">© ${new Date().getFullYear()} TECHNIZA. Todos los derechos reservados.</div>
             </div>
             
         </div>
         </div>
-      </body>
-      </html>`;
 
-      
-    return html
-  }
-}
+
+
+      </body>
+      </html>

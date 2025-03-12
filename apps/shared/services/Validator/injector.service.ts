@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-
+import { Global, Injectable } from '@nestjs/common';
+@Global() 
 @Injectable()
 export class ValidatorSqlService {
   public isValidInput(input: string): boolean {

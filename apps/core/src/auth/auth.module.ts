@@ -6,8 +6,10 @@ import { EncryptionService } from 'apps/shared/services/cypress/crypto.service';
 import { Auth2FA } from './services/2fa.service';
 import { MailService } from 'apps/shared/services/mail/mail.service';
 import { Auth2FAService } from './services/auth2fa.service';
+import { DatabaseModule } from 'apps/shared/database/conected.module';
 
 @Module({
+  imports:[DatabaseModule],
   controllers:[AuthController],
   providers: [AuthService, ValidatorSqlService, EncryptionService, Auth2FA, MailService, Auth2FAService]
 })
