@@ -18,15 +18,6 @@
       "compilerOptions": {
         "tsConfigPath": "apps/core/tsconfig.app.json"
       }
-    },
-    "empleado": {
-      "type": "application",
-      "root": "apps/empleado",
-      "entryFile": "main",
-      "sourceRoot": "apps/empleado/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/empleado/tsconfig.app.json"
-      }
     }
   }
 }
