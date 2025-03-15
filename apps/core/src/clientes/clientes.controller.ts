@@ -13,26 +13,21 @@ export class ClientesController {
     return this.empleadosService.all(res);
   }
 
-  @Get('usuarios')
-  public AllUsuarios(@Res() res: Response){
-    return this.empleadosService.AllUsuarios(res);
-  }
-
-  @Post('CrearUsu')
+  @Post('CrearDatos')
   public async Crearusuario(@Body() data:any,@Res() res: Response){
     const datos = await this.cryptoService.decryptData(data.data);
-    return this.empleadosService.CrearUsaurios(datos, res);
+    return this.empleadosService.Crear(datos, res);
   }
 
   @Put('UpdateEstado')
   public async UpdateEstado(@Body() data:any,@Res() res: Response){
     const datos = await this.cryptoService.decryptData(data.data);
-    return this.empleadosService.usuarioEstado(datos, res);
+    return this.empleadosService.Estado(datos, res);
   }
 
-  @Put('ActualizarUsu')
+  @Put('ActualizarDatos')
   public async ActualizarUsu(@Body() data:any,@Res() res: Response){
     const datos = await this.cryptoService.decryptData(data.data);
-    return this.empleadosService.EditarUsuarios(datos, res);
+    return this.empleadosService.EditarCliente(datos, res);
   }
 }

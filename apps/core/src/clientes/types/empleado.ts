@@ -1,13 +1,17 @@
-export interface empleaoDto{
-    id?: any;
+
+export interface ClienteFormulario {
+    id?: string;
+    buscar: string;
     nombre: string;
-    apellido1: string;
-    apellido2: string;
-    clave: string;
-    claveCrypto?: string;
-    fecha_reg: any;
+    telefono: string;
+    direccion: string;
+    pais: string;
+    ciudad: string;
+    codpostal: string;
+    rfc: string;
+    empresa: string;
     correo: string;
-    usuario: string;
-    estado: boolean;
-    rol?: any;
-}
+    idempleado: string;
+    estado?: boolean;
+  }
+  
