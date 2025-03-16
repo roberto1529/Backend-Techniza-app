@@ -54,7 +54,6 @@ export class ProductosService {
     }
   }
 
-
   async Crear(datos: Formulario, res: Response) {
     let data = datos;
     let response;
@@ -96,13 +95,11 @@ export class ProductosService {
     }
   }
 
-
-
   public async Estado(data, res) {
 
     const transaction = await this.sequelize.transaction();
     try {
-      await this.sequelize.query(`UPDATE usu_cliente SET estado_cliente=:es WHERE id=:id;`, {
+      await this.sequelize.query(`UPDATE public.producto SET estado=:es WHERE id=:id`, {
         type: QueryTypes.UPDATE,
         replacements: {
           es: data.estado,
@@ -124,43 +121,38 @@ export class ProductosService {
 
 
 
-  public async EditarCliente(data: any, res: Response) {
+  public async EditarCliente(data: Formulario, res: Response) {
     const transaction = await this.sequelize.transaction();
     let response;
     try {
       await this.sequelize.query(
-        `UPDATE usu_cliente 
-         SET nombre = :nm, 
-             correo = :ml, 
-             telefono = :tl, 
-             empresa = :em, 
-             rfc = :rfc, 
-             direccion = :dr, 
-             id_pais = :ps, 
-             id_ciudad = :ci, 
-             codigo_postal = :cp
-         WHERE id = :id;`,
+        `UPDATE producto
+          SET id_marca=:idm, 
+              modelo=:md, 
+              descripcion=:ds, 
+              costo=:ct, 
+              ganacia=:gn, 
+              utilidad=:ut, 
+              venta=:vt
+          WHERE id=:id;`,
         {
           type: QueryTypes.UPDATE,
           replacements: {
-            nm: data.nombre,
-            ml: data.correo,
-            tl: data.telefono,
-            em: data.empresa,
-            rfc: data.rfc,
-            dr: data.direccion,
-            ps: data.pais,
-            ci: data.ciudad,
-            cp: data.codpostal,
-            emp: data.idempleado,
-            id: data.id // ID del cliente a actualizar
+            idm:data.marca,
+            md: data.modelo,
+            ds: data.descripcion,
+            ct: data.costo,
+            gn: data.ganancia,
+            ut: data.utilidad,
+            vt: data.venta,
+            id: data.id 
           },
           transaction,
         }
       );
 
       await transaction.commit();
-      response = { data: 'Cliente editado con exito', Status: 200 }
+      response = { data: 'Producto editado con exito', Status: 200 }
       response = await this.encryptionService.encryptData(response);
       return res.status(200).json(response);
     } catch (error) {
