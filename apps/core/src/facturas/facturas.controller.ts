@@ -15,7 +15,7 @@ export class FacturasController {
   }
 
   @Post('facturdos')
-  public async ProductosVendidos(@Body() data:any,@Res() res: Response){
+  public async ProductosVendidos(@Body() data:any, @Res() res: Response){
     const datos = await this.cryptoService.decryptData(data.data);
     return this.service.ProductosVendidos(datos, res);
   }
