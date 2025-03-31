@@ -26,6 +26,11 @@ export class FacturasController {
     return this.service.Crear(datos, res);
   }
 
+  @Post('CargaDatos')
+  public async CargaDatos(@Body() data:any,@Res() res: Response){
+    const datos = await this.cryptoService.decryptData(data.data);
+    return this.service.CargaDatos(datos, res);
+  }
   @Put('UpdateEstado')
   public async Editar(@Body() data:any,@Res() res: Response){
     const datos = await this.cryptoService.decryptData(data.data);

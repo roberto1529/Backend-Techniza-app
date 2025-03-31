@@ -116,8 +116,8 @@ export class FacturasService {
     let data = datos;
     let response;
     let sys = await this.Crearystema(data);
-    if (sys === true) {
-      response = { data: 'Producto registrado con exito', Status: 200 };
+    if (sys !== null || sys !== undefined) {
+      response = { data:{msj: 'Producto registrado con exito', id: sys }, Status: 200 };
       response = await this.encryptionService.encryptData(response);
       return res.status(200).json(response);
     }
@@ -144,7 +144,7 @@ export class FacturasService {
       await this.FactGastos(id, data);
 
       
-      return true;
+      return id;
     } catch (error) {
       await transaction.rollback();
       console.log(error);
@@ -226,6 +226,17 @@ export class FacturasService {
     } catch (error) {
       await transaction.rollback();
       console.log(error);
+    }
+  }
+
+  async CargaDatos(datos: Formulario, res: Response) {
+    let data = datos;
+    let response;
+    let sys = await this.Crearystema(data);
+    if (sys !== null || sys !== undefined) {
+      response = { data:{msj: 'Producto registrado con exito', id: sys }, Status: 200 };
+      response = await this.encryptionService.encryptData(response);
+      return res.status(200).json(response);
     }
   }
 
