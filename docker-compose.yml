@@ -6,11 +6,9 @@ services:
     container_name: nest-backend
     ports:
       - "3000:3000"
-      - "443:3000"  # Mapea el puerto HTTPS
     volumes:
-      - /etc/letsencrypt/live/admin.techniza.mx/:/app/certs:ro
+      - /etc/letsencrypt/live/admin.techniza.mx/fullchain.pem:/app/certs/fullchain.pem:ro
+      - /etc/letsencrypt/live/admin.techniza.mx/privkey.pem:/app/certs/privkey.pem:ro
     environment:
       - NODE_ENV=production
-      - SSL_CERT_PATH=/app/certs/fullchain.pem
-      - SSL_KEY_PATH=/app/certs/privkey.pem
     restart: always
