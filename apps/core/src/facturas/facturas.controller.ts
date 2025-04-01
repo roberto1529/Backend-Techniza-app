@@ -26,7 +26,7 @@ export class FacturasController {
     return this.service.Crear(datos, res);
   }
 
-  @Post('CargaDatos')
+  @Post('CargadorProductos')
   public async CargaDatos(@Body() data:any,@Res() res: Response){
     const datos = await this.cryptoService.decryptData(data.data);
     return this.service.CargaDatos(datos, res);
@@ -40,6 +40,6 @@ export class FacturasController {
   @Put('ActualizarDatos')
   public async ActualizarEstado(@Body() data:any,@Res() res: Response){
     const datos = await this.cryptoService.decryptData(data.data);
-    return this.service.EditarCliente(datos, res);
+    return this.service.EditarFactura(datos, res);
   }
 }

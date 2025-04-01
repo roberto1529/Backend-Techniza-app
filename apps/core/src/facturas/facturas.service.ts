@@ -22,13 +22,13 @@ export class FacturasService {
     const transaction = await this.sequelize.transaction();
     try {
       const DatosQuery = await this.sequelize.query(
-        `select fm.id, fm.id_cliente, uc.nombre as cliente, uc.correo, uc.direccion, uc.telefono ,fm.id_estado, pe.estado_nombre , fc.subtotal, fc.iva, fc.total,fm.estado,
-      (select count(*) from fact_venta_item sf where sf.id_factura  = fm.id and sf.estado = true) as cantidad,
-      (current_date::text || ' ' || fm.fecha_reg::text) as fecha_reg
-      from fact_maestro fm
-      join fact_venta_costo fc on fc.id_factura = fm.id
-      join usu_cliente uc on uc.id = fm.id_cliente
-      join para_estado pe  on pe.id  = fm.id_estado;`,
+        `select fm.id, concat('FACT-',fm.id) as code_fact ,fm.id_cliente, uc.nombre as cliente, uc.correo, uc.direccion, uc.telefono ,fm.id_estado, pe.estado_nombre , fc.subtotal, fc.iva, fc.total,fm.estado,
+        (select count(*) from fact_venta_item sf where sf.id_factura  = fm.id and sf.estado = true) as cantidad,
+        (current_date::text || ' ' || fm.fecha_reg::text) as fecha_reg
+        from fact_maestro fm
+        join fact_venta_costo fc on fc.id_factura = fm.id
+        join usu_cliente uc on uc.id = fm.id_cliente
+        join para_estado pe  on pe.id  = fm.id_estado 	order by fm.id asc;`,
         {
           type: QueryTypes.SELECT,
           transaction,
@@ -230,54 +230,215 @@ export class FacturasService {
   }
 
   async CargaDatos(datos: Formulario, res: Response) {
-    let data = datos;
-    let response;
-    let sys = await this.Crearystema(data);
-    if (sys !== null || sys !== undefined) {
-      response = { data:{msj: 'Producto registrado con exito', id: sys }, Status: 200 };
-      response = await this.encryptionService.encryptData(response);
-      return res.status(200).json(response);
-    }
-  }
-
-  public async EditarCliente(data: any, res: Response) {
     const transaction = await this.sequelize.transaction();
-    let response;
     try {
-      await this.sequelize.query(
-        `UPDATE producto
-          SET id_marca=:idm, 
-              modelo=:md, 
-              descripcion=:ds, 
-              costo=:ct, 
-              ganacia=:gn, 
-              utilidad=:ut, 
-              venta=:vt
-          WHERE id=:id;`,
+      const DatosQuery = await this.sequelize.query(
+        `select fi.id_factura, fi.id_producto , p.descripcion,  fi.cantidad, p.venta as costo_uni, (CAST(p.venta AS NUMERIC) * fi.cantidad) AS subtotalItem
+          from fact_venta_item fi
+          join producto p on p.id = fi.id_producto
+          where fi.id_factura = :id`,
         {
-          type: QueryTypes.UPDATE,
-          replacements: {
-            idm: data.marca,
-            md: data.modelo,
-            ds: data.descripcion,
-            ct: data.costo,
-            gn: data.ganancia,
-            ut: data.utilidad,
-            vt: data.venta,
-            id: data.id,
-          },
+          type: QueryTypes.SELECT,
+          replacements: {id: datos.id},
           transaction,
         },
       );
 
-      await transaction.commit();
-      response = { data: 'Producto editado con exito', Status: 200 };
+      let response: any = {
+        data: {
+          datos: DatosQuery,
+        },
+        status: 200,
+      };
       response = await this.encryptionService.encryptData(response);
+
+      await transaction.commit();
       return res.status(200).json(response);
     } catch (error) {
       await transaction.rollback();
       console.log(error);
-      throw error; // Lanzamos el error para que pueda manejarse en otro nivel
+    }
+  }
+
+  public async EditarFactura(data: any, res: Response) {
+    const transaction = await this.sequelize.transaction();
+    try {
+      // 1. Actualizar datos principales de la factura
+      await this.sequelize.query(
+        `UPDATE fact_maestro 
+         SET id_cliente = :cl 
+         WHERE id = :id`,
+        {
+          type: QueryTypes.UPDATE,
+          replacements: {
+            cl: data.cliente,
+            id: data.id
+          },
+          transaction,
+        }
+      );
+
+      // 2. Actualizar los costos (subtotal, iva, total)
+      await this.actualizarCostos(data.id, data, transaction);
+
+      // 3. Manejar los items de la factura
+      await this.actualizarItemsFactura(data.id, data.productos, transaction);
+
+      await transaction.commit();
+
+      // Enviar respuesta de éxito
+      let response: any = { 
+        data: { 
+          msj: 'Factura actualizada correctamente', 
+          id: data.id 
+        }, 
+        Status: 200 
+      };
+      response = await this.encryptionService.encryptData(response);
+      return res.status(200).json(response);
+
+    } catch (error) {
+      await transaction.rollback();
+      console.error('Error al editar factura:', error);
+
+      // Enviar respuesta de error
+      const errorResponse = {
+        data: { 
+          msj: 'Error al actualizar la factura',
+          error: error.message 
+        },
+        Status: 500
+      };
+      return res.status(500).json(errorResponse);
+    }
+  }
+
+  private async actualizarCostos(
+    id: number, 
+    data: Formulario,
+    transaction: any
+  ): Promise<void> {
+    // Verificar si ya existe un registro de costos
+    const [existeCosto] = await this.sequelize.query(
+      `SELECT id FROM fact_venta_costo WHERE id_factura = :id LIMIT 1`,
+      {
+        type: QueryTypes.SELECT,
+        replacements: { id },
+        transaction,
+      }
+    );
+
+    if (existeCosto) {
+      // Actualizar registro existente
+      await this.sequelize.query(
+        `UPDATE fact_venta_costo 
+         SET subtotal = :sb, iva = :iv, total = :tl 
+         WHERE id_factura = :id`,
+        {
+          type: QueryTypes.UPDATE,
+          replacements: {
+            sb: data.subtotal.toString(),
+            iv: data.iva.toString(),
+            tl: data.total.toString(),
+            id
+          },
+          transaction,
+        }
+      );
+    } else {
+      // Crear nuevo registro
+      await this.sequelize.query(
+        `INSERT INTO fact_venta_costo 
+         (id_factura, subtotal, iva, total) 
+         VALUES(:id, :sb, :iv, :tl)`,
+        {
+          type: QueryTypes.INSERT,
+          replacements: {
+            id,
+            sb: data.subtotal.toString(),
+            iv: data.iva.toString(),
+            tl: data.total.toString()
+          },
+          transaction,
+        }
+      );
+    }
+  }
+
+  private async actualizarItemsFactura(
+    idFactura: number, 
+    items: any[],
+    transaction: any
+  ): Promise<void> {
+    // 1. Obtener items actuales
+    const itemsActuales = await this.sequelize.query(
+      `SELECT id, id_producto FROM fact_venta_item 
+       WHERE id_factura = :idFactura`,
+      {
+        type: QueryTypes.SELECT,
+        replacements: { idFactura },
+        transaction,
+      }
+    );
+
+    // 2. Identificar items a eliminar
+    const idsActuales = itemsActuales.map((item: any) => item.id_producto);
+    const idsNuevos = items.map((item: any)  => item.producto);
+    
+    const itemsAEliminar: any = itemsActuales.filter(
+      (item: any)  => !idsNuevos.includes(item.id_producto)
+    );
+
+    // Eliminar items que ya no están
+    for (const item of itemsAEliminar) {
+      await this.sequelize.query(
+        `DELETE FROM fact_venta_item WHERE id = :id`,
+        {
+          type: QueryTypes.DELETE,
+          replacements: { id: item.id },
+          transaction,
+        }
+      );
+    }
+
+    // 3. Actualizar/insertar items
+    for (const item of items) {
+      const itemExistente: any = itemsActuales.find(
+        (i: any) => i.id_producto === item.producto
+      );
+
+      if (itemExistente) {
+        // Actualizar cantidad
+        await this.sequelize.query(
+          `UPDATE fact_venta_item 
+           SET cantidad = :cantidad 
+           WHERE id = :id`,
+          {
+            type: QueryTypes.UPDATE,
+            replacements: {
+              cantidad: item.cantidad,
+              id: itemExistente.id
+            },
+            transaction,
+          }
+        );
+      } else {
+        // Insertar nuevo item
+        await this.sequelize.query(
+          `INSERT INTO fact_venta_item 
+           (id_factura, id_producto, cantidad) 
+           VALUES(:idFactura, :idProducto, :cantidad)`,
+          {
+            type: QueryTypes.INSERT,
+            replacements: {
+              idFactura,
+              idProducto: item.producto,
+              cantidad: item.cantidad
+            },
+            transaction,
+          }
+        );
+      }
     }
   }
 }
