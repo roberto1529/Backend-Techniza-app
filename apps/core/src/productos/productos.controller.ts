@@ -31,4 +31,22 @@ export class ProductosController {
     const datos = await this.cryptoService.decryptData(data.data);
     return this.service.EditarCliente(datos, res);
   }
+
+  @Post('CrearMarca')
+  public async CrearMarca(@Body() data:any,@Res() res: Response){
+    const datos = await this.cryptoService.decryptData(data.data);
+    return this.service.Crearmarca(datos, res);
+  }
+
+  @Put('EditarMarca')
+  public async EditarMarca(@Body() data:any,@Res() res: Response){
+    const datos = await this.cryptoService.decryptData(data.data);
+    return this.service.Editarmarca(datos, res);
+  }
+
+  @Put('EditarMarcaEstado')
+  public async EditarMarcaEstado(@Body() data:any,@Res() res: Response){
+    const datos = await this.cryptoService.decryptData(data.data);
+    return this.service.EditarMarcaEstado(datos, res);
+  }
 }

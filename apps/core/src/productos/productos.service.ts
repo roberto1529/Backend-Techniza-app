@@ -38,10 +38,17 @@ export class ProductosService {
       }
       );
 
+      
+      const MarcasQuerylist = await this.sequelize.query(`select pm.id, pm.marca, pm.estado from para_marca pm`, {
+        type: QueryTypes.SELECT,
+        transaction,
+      }
+      );
       let response: any = {
         data: {
           productos: productosQuery,
-          marcas: MarcasQuery
+          marcas: MarcasQuery,
+          marcaslist: MarcasQuerylist
         }, status: 200
       };
       response = await this.encryptionService.encryptData(response);
@@ -119,8 +126,6 @@ export class ProductosService {
     }
   }
 
-
-
   public async EditarCliente(data: Formulario, res: Response) {
     const transaction = await this.sequelize.transaction();
     let response;
@@ -162,8 +167,77 @@ export class ProductosService {
     }
   }
 
+  public async Crearmarca(data: Formulario, res: Response) {
 
+    const transaction = await this.sequelize.transaction();
+    try {
+      await this.sequelize.query(`INSERT INTO para_marca 
+        (marca) VALUES (:mr);`, {
+        type: QueryTypes.INSERT,
+        replacements: {
+          mr: data.marca,
+        },
+        transaction,
+      }
+      );
+      await transaction.commit();
+      let response: any = { data: 'Marca creada con exito', Status: 200 }
+      response = await this.encryptionService.encryptData(response);
+      return res.status(200).json(response);
+    } catch (error) {
+      await transaction.rollback();
+      console.log(error);
+    }
+  }
 
+  public async Editarmarca(data: Formulario, res: Response) {
+    console.log('formulario', data);
+    
+    const transaction = await this.sequelize.transaction();
+    try {
+      await this.sequelize.query(`UPDATE para_marca
+      SET marca= :md
+      WHERE id= :id;`, {
+        type: QueryTypes.UPDATE,
+        replacements: {
+          id: data.id,
+          md: data.marca,
+        },
+        transaction,
+      }
+      );
+      await transaction.commit();
+      let response: any = { data: 'Marca editada con exito', Status: 200 }
+      response = await this.encryptionService.encryptData(response);
+      return res.status(200).json(response);
+    } catch (error) {
+      await transaction.rollback();
 
+      console.log(error);
+    }
+  }
 
+  public async EditarMarcaEstado(data, res) {
+
+    const transaction = await this.sequelize.transaction();
+    try {
+      await this.sequelize.query(`UPDATE para_marca SET estado=:es WHERE id=:id`, {
+        type: QueryTypes.UPDATE,
+        replacements: {
+          es: data.estado,
+          id: data.id
+        },
+        transaction,
+      });
+
+      let response: any = { data: 'Estado actulizado con exito.', status: 200 };
+      response = await this.encryptionService.encryptData(response);
+
+      await transaction.commit();
+      return res.status(200).json(response);
+    } catch (error) {
+      await transaction.rollback();
+      console.log(error);
+    }
+  }
 }
