@@ -240,4 +240,53 @@ export class ProductosService {
       console.log(error);
     }
   }
+
+  async analytics(res: Response) {
+    const transaction = await this.sequelize.transaction();
+    try {
+      const MetricQuery = await this.sequelize.query(`SELECT 
+            TO_CHAR(TO_TIMESTAMP(CONCAT(CURRENT_DATE, ' ', fm.fecha_reg), 'YYYY-MM-DD HH24:MI:SS'), 'YYYY-MM') AS mes, 
+            COUNT(fm.id) AS cotizaciones, 
+            SUM(fvc.total::NUMERIC) AS total_ventas
+          FROM fact_maestro fm 
+          JOIN usu_cliente uc ON fm.id_cliente = uc.id
+          JOIN fact_venta_costo fvc ON fm.id = fvc.id_factura
+          WHERE fm.estado = TRUE 
+          AND DATE_TRUNC('month', TO_TIMESTAMP(CONCAT(CURRENT_DATE, ' ', fm.fecha_reg), 'YYYY-MM-DD HH24:MI:SS')) = DATE_TRUNC('month', CURRENT_DATE)
+          GROUP BY mes
+          ORDER BY mes;`,
+        {
+          type: QueryTypes.SELECT,
+          transaction,
+        }
+      );
+
+      const ClienteQuery = await this.sequelize.query(`select COUNT(*) as cli from usu_cliente where estado_cliente = true`, {
+        type: QueryTypes.SELECT,
+        transaction,
+      }
+      );
+      
+      const ProQuery= await this.sequelize.query(`select COUNT(*) as pro from producto where estado = true`, {
+        type: QueryTypes.SELECT,
+        transaction,
+      }
+      );
+
+      let response: any = {
+        data: {
+          ventas: MetricQuery,
+          clientes: ClienteQuery,
+          productos: ProQuery
+        }, status: 200
+      };
+      response = await this.encryptionService.encryptData(response);
+
+      await transaction.commit();
+      return res.status(200).json(response);
+    } catch (error) {
+      await transaction.rollback();
+      console.log(error);
+    }
+  }
 }
