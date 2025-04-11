@@ -56,4 +56,9 @@ export class ProductosController {
     return this.service.analytics(res);
   }
 
+  @Get('Grafics')
+  public Grafics(@Res() res: Response) {
+    return this.service.Grafics(res);
+  }
+
 }

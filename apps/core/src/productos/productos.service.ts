@@ -289,4 +289,38 @@ export class ProductosService {
       console.log(error);
     }
   }
+
+  async Grafics(res: Response) {
+    const transaction = await this.sequelize.transaction();
+    try {
+      const MetricQuery = await this.sequelize.query(`SELECT 
+              uc.id AS id_cliente,
+              uc.nombre AS cliente,
+              COUNT(fm.id) AS total_cotizaciones
+          FROM fact_maestro fm
+          JOIN usu_cliente uc ON fm.id_cliente = uc.id
+          WHERE fm.estado = TRUE
+            AND DATE_TRUNC('month', CURRENT_DATE) = DATE_TRUNC('month', TO_TIMESTAMP(CONCAT(CURRENT_DATE::text, ' ', fm.fecha_reg::text), 'YYYY-MM-DD HH24:MI:SS'))
+          GROUP BY uc.id, uc.nombre
+          ;`,
+        {
+          type: QueryTypes.SELECT,
+          transaction,
+        }
+      );
+
+      let response: any = {
+        data: {
+          datos: MetricQuery,
+        }, status: 200
+      };
+      response = await this.encryptionService.encryptData(response);
+
+      await transaction.commit();
+      return res.status(200).json(response);
+    } catch (error) {
+      await transaction.rollback();
+      console.log(error);
+    }
+  }
 }
