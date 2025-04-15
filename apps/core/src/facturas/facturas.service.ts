@@ -22,13 +22,13 @@ export class FacturasService {
     const transaction = await this.sequelize.transaction();
     try {
       const DatosQuery = await this.sequelize.query(
-        `select fm.id, concat('FACT-',fm.id) as code_fact ,fm.id_cliente, uc.nombre as cliente, uc.correo, uc.direccion, uc.telefono ,fm.id_estado, pe.estado_nombre , fc.subtotal, fc.iva, fc.total,fm.estado,
-        (select count(*) from fact_venta_item sf where sf.id_factura  = fm.id and sf.estado = true) as cantidad,
+       `select fm.id, LPAD(fm.id::text, 5, '0') AS code_fact, fm.id_cliente, uc.nombre as cliente, uc.correo, uc.direccion, uc.telefono ,fm.id_estado, pe.estado_nombre , fc.subtotal,
+        fc.iva, fc.total,fm.estado,(select count(*) from fact_venta_item sf where sf.id_factura  = fm.id and sf.estado = true) as cantidad,
         (current_date::text || ' ' || fm.fecha_reg::text) as fecha_reg
         from fact_maestro fm
         join fact_venta_costo fc on fc.id_factura = fm.id
         join usu_cliente uc on uc.id = fm.id_cliente
-        join para_estado pe  on pe.id  = fm.id_estado 	order by fm.id asc;`,
+        join para_estado pe  on pe.id  = fm.id_estado 	order by fm.id asc`,
         {
           type: QueryTypes.SELECT,
           transaction,

@@ -25,6 +25,12 @@ export class ProductosController {
     return this.service.Estado(datos, res);
   }
 
+  @Put('DeleteEstado')
+  public async eliminado(@Body() data: any, @Res() res: Response) {
+    const datos = await this.cryptoService.decryptData(data.data);
+    return this.service.Eliminado(datos, res);
+  }
+
   @Put('ActualizarDatos')
   public async ActualizarEstado(@Body() data: any, @Res() res: Response) {
     const datos = await this.cryptoService.decryptData(data.data);

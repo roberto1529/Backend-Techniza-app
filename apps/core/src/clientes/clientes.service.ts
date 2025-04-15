@@ -65,7 +65,9 @@ export class ClientesService {
 
 
   async Crear(datos: ClienteFormulario, res: Response){
-    let data = datos;
+        let data = datos;
+        console.log('datos de entrada', data);
+        
         let response;
         let sys = await this.Crearystema(data);
         if (sys === true) {

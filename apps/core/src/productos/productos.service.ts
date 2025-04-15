@@ -6,7 +6,6 @@ import { QueryTypes } from 'sequelize';
 import { Response } from 'express';
 import { InjectConnection } from '@nestjs/sequelize';
 import { MailService } from 'apps/shared/services/mail/mail.service';
-import { MailInterface } from '../auth/types/auth.interfaces';
 import { Formulario } from './types/dto.formulario';
 
 
@@ -23,10 +22,10 @@ export class ProductosService {
     const transaction = await this.sequelize.transaction();
     try {
       const productosQuery = await this.sequelize.query(`select p.id, p.id_marca, pm.marca ,p.modelo, p.descripcion, p.costo, p.ganacia as ganancia, p.utilidad,p.venta, p.estado, 
-      (current_date::text || ' ' || p.fecha_reg::text) as fecha_reg
+      (current_date::text || ' ' || p.fecha_reg::text) as fecha_reg, p.eliminado
       from producto p
-      join para_marca pm on pm.id = p.id_marca and pm.estado = true`,
-        {
+      join para_marca pm on pm.id = p.id_marca and pm.estado = true and p.eliminado = false order by p.fecha_reg asc`,
+              {
           type: QueryTypes.SELECT,
           transaction,
         }
@@ -107,6 +106,30 @@ export class ProductosService {
     const transaction = await this.sequelize.transaction();
     try {
       await this.sequelize.query(`UPDATE public.producto SET estado=:es WHERE id=:id`, {
+        type: QueryTypes.UPDATE,
+        replacements: {
+          es: data.estado,
+          id: data.id
+        },
+        transaction,
+      });
+
+      let response: any = { data: 'Estado actulizado con exito.', status: 200 };
+      response = await this.encryptionService.encryptData(response);
+
+      await transaction.commit();
+      return res.status(200).json(response);
+    } catch (error) {
+      await transaction.rollback();
+      console.log(error);
+    }
+  }
+
+  public async Eliminado(data, res) {
+
+    const transaction = await this.sequelize.transaction();
+    try {
+      await this.sequelize.query(`UPDATE public.producto SET eliminado=:es WHERE id=:id`, {
         type: QueryTypes.UPDATE,
         replacements: {
           es: data.estado,
@@ -240,6 +263,7 @@ export class ProductosService {
       console.log(error);
     }
   }
+
 
   async analytics(res: Response) {
     const transaction = await this.sequelize.transaction();
