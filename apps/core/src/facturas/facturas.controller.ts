@@ -42,4 +42,38 @@ export class FacturasController {
     const datos = await this.cryptoService.decryptData(data.data);
     return this.service.EditarFactura(datos, res);
   }
+
+  @Get('allmachote')
+  public Allmachote(@Res() res: Response){
+    return this.service.allMachote(res);
+  }
+
+  @Post('cantidadplantilla')
+  public async ProductosPlantilla(@Body() data:any, @Res() res: Response){
+    const datos = await this.cryptoService.decryptData(data.data);
+    return this.service.ProductosPlantilla(datos,res);
+  }
+
+  @Post('CargaDatosPlantilla')
+  public async CargaDatosPlantilla(@Body() data:any,@Res() res: Response){
+    const datos = await this.cryptoService.decryptData(data.data);
+    return this.service.CargaDatosPlantilla(datos, res);
+  }
+
+  @Post('CrearPlantilla')
+  public async CrearPlantilla(@Body() data:any,@Res() res: Response){
+    const datos = await this.cryptoService.decryptData(data.data);
+    return this.service.CrearPlantilla(datos, res);
+  }
+
+  @Put('EditarPlantilla')
+  public async EditarPlantilla(@Body() data:any,@Res() res: Response){
+    const datos = await this.cryptoService.decryptData(data.data);
+    return this.service.EditarPlantilla(datos, res);
+  }
+    @Put('UpdateEstadoPlantilla')
+  public async UpdateEstadoPlantilla(@Body() data:any,@Res() res: Response){
+    const datos = await this.cryptoService.decryptData(data.data);
+    return this.service.UpdateEstadoPlantilla(datos, res);
+  }
 }

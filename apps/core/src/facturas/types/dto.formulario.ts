@@ -8,6 +8,7 @@ export interface Formulario {
     iva:number;
     total:number;
     idempleado:number;
+    nota:Text;
     estado?:boolean;
 }
 
